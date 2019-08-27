@@ -27,14 +27,21 @@ class UicnspiderSpider(scrapy.Spider):
 
     # 使用bs4解析导出
     def analysisBySelector(self, response):
-        sel = Selector(text=response.css('.post-works').get(), type="html")
-        nodes = sel.xpath('//li').extract()
+        # sel = Selector(text=response.css('.post-works').get(), type="html")
+        # nodes = sel.xpath('//li').extract()
+        nodes = response.css('.post-works li').extract()
         for node in nodes:
             try:
                 item = UicnItem()
                 itemSelect = Selector(text=node, type="html")
-                title = itemSelect.xpath('//h4/text()').extract()[0]
-                url = itemSelect.xpath('//div//@href')[0].extract()
+                # 方式1 xpath
+                # title = itemSelect.xpath('//h4/text()').extract()[0]
+                # 方式2 css
+                title = itemSelect.css('h4::text').extract_first()
+                # 方式1 xpath
+                # url = itemSelect.xpath('//div//@href')[0].extract()
+                # 方式2 css
+                url = itemSelect.css('.cover a::attr(href)').extract_first()
                 item['title'] = title
                 item['url'] = url
                 item['id'] = url.replace('https://www.ui.cn/detail/', '').replace('.html', '')
