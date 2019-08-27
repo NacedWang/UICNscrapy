@@ -18,7 +18,6 @@ class UicnPipeline(object):
         # 爬虫开启的时候调用，只调用一次
         print('爬虫文件开始执行', spider.name)
 
-    # TODO
     def process_item(self, item, spider):
         print('管道文件我来了')
         try:
