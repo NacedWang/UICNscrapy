@@ -21,7 +21,7 @@ class UicnPipeline(object):
     def process_item(self, item, spider):
         print('管道文件我来了')
         try:
-            self.redisConn.hmset(self.redisPrefix + item['id'], item)
+            res = self.redisConn.hmset(self.redisPrefix + item['id'], item)
         except Exception as err:
             print(err)
         return item

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from bs4 import BeautifulSoup
+from scrapy import Selector
 
 from uicn.items import UicnItem
 
@@ -14,10 +15,10 @@ class UicnspiderSpider(scrapy.Spider):
 
     def parse(self, response):
         # 使用bs4解析导出
-        yield from self.analysisByBs4(response)
+        # yield from self.analysisByBs4(response)
 
         # 使用scrapy 自带Selector导出
-        # tempv = response.css('post post-works mtv cl')
+        yield from self.analysisBySelector(response)
 
         # 前100页
         if self.page < 100:
@@ -25,6 +26,23 @@ class UicnspiderSpider(scrapy.Spider):
             yield scrapy.Request(self.base_url + str(self.page), callback=self.parse)
 
     # 使用bs4解析导出
+    def analysisBySelector(self, response):
+        sel = Selector(text=response.css('.post-works').get(), type="html")
+        nodes = sel.xpath('//li').extract()
+        for node in nodes:
+            try:
+                item = UicnItem()
+                itemSelect = Selector(text=node, type="html")
+                title = itemSelect.xpath('//h4/text()').extract()[0]
+                url = itemSelect.xpath('//div//@href')[0].extract()
+                item['title'] = title
+                item['url'] = url
+                item['id'] = url.replace('https://www.ui.cn/detail/', '').replace('.html', '')
+                yield item
+            except Exception as e:
+                print("build item error :", str(e))
+
+    # 使用bs4解析导出 (慢)
     def analysisByBs4(self, response):
         soup = BeautifulSoup(response.body.decode(), 'html.parser')
         ul = soup.find('ul', attrs={'class': 'post post-works mtv cl'})
